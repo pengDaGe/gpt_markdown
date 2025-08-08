@@ -44,9 +44,18 @@ typedef LatexBuilder =
 typedef LinkBuilder =
     Widget Function(
       BuildContext context,
-      String text,
+      InlineSpan text,
       String url,
       TextStyle style,
+    );
+
+/// A builder function for the table.
+typedef TableBuilder =
+    Widget Function(
+      BuildContext context,
+      List<CustomTableRow> tableRows,
+      TextStyle textStyle,
+      GptMarkdownConfig config,
     );
 
 /// A builder function for the highlight.
@@ -61,12 +70,12 @@ typedef ImageBuilder = Widget Function(BuildContext context, String imageUrl);
 /// The [GptMarkdownConfig] class is used to configure the GPT Markdown component.
 /// It takes a [style] parameter to set the style of the text,
 /// a [textDirection] parameter to set the direction of the text,
-/// and an optional [onLinkTab] parameter to handle link clicks.
+/// and an optional [onLinkTap] parameter to handle link clicks.
 class GptMarkdownConfig {
   const GptMarkdownConfig({
     this.style,
     this.textDirection = TextDirection.ltr,
-    this.onLinkTab,
+    this.onLinkTap,
     this.textAlign,
     this.textScaler,
     this.latexWorkaround,
@@ -83,6 +92,7 @@ class GptMarkdownConfig {
     this.overflow,
     this.components,
     this.inlineComponents,
+    this.tableBuilder,
   });
 
   /// The direction of the text.
@@ -98,7 +108,7 @@ class GptMarkdownConfig {
   final TextScaler? textScaler;
 
   /// The callback function to handle link clicks.
-  final void Function(String url, String title)? onLinkTab;
+  final void Function(String url, String title)? onLinkTap;
 
   /// The LaTeX workaround.
   final String Function(String tex)? latexWorkaround;
@@ -142,11 +152,14 @@ class GptMarkdownConfig {
   /// The list of inline components.
   final List<MarkdownComponent>? inlineComponents;
 
+  /// The table builder.
+  final TableBuilder? tableBuilder;
+
   /// A copy of the configuration with the specified parameters.
   GptMarkdownConfig copyWith({
     TextStyle? style,
     TextDirection? textDirection,
-    final void Function(String url, String title)? onLinkTab,
+    final void Function(String url, String title)? onLinkTap,
     final TextAlign? textAlign,
     final TextScaler? textScaler,
     final String Function(String tex)? latexWorkaround,
@@ -163,11 +176,12 @@ class GptMarkdownConfig {
     final UnOrderedListBuilder? unOrderedListBuilder,
     final List<MarkdownComponent>? components,
     final List<MarkdownComponent>? inlineComponents,
+    final TableBuilder? tableBuilder,
   }) {
     return GptMarkdownConfig(
       style: style ?? this.style,
       textDirection: textDirection ?? this.textDirection,
-      onLinkTab: onLinkTab ?? this.onLinkTab,
+      onLinkTap: onLinkTap ?? this.onLinkTap,
       textAlign: textAlign ?? this.textAlign,
       textScaler: textScaler ?? this.textScaler,
       latexWorkaround: latexWorkaround ?? this.latexWorkaround,
@@ -184,6 +198,7 @@ class GptMarkdownConfig {
       unOrderedListBuilder: unOrderedListBuilder ?? this.unOrderedListBuilder,
       components: components ?? this.components,
       inlineComponents: inlineComponents ?? this.inlineComponents,
+      tableBuilder: tableBuilder ?? this.tableBuilder,
     );
   }
 
@@ -197,5 +212,28 @@ class GptMarkdownConfig {
       maxLines: maxLines,
       overflow: overflow,
     );
+  }
+
+  /// A method to check if the configuration is the same.
+  bool isSame(GptMarkdownConfig other) {
+    return style == other.style &&
+        textAlign == other.textAlign &&
+        textScaler == other.textScaler &&
+        maxLines == other.maxLines &&
+        overflow == other.overflow &&
+        followLinkColor == other.followLinkColor &&
+        // latexWorkaround == other.latexWorkaround &&
+        // components == other.components &&
+        // inlineComponents == other.inlineComponents &&
+        // latexBuilder == other.latexBuilder &&
+        // sourceTagBuilder == other.sourceTagBuilder &&
+        // codeBuilder == other.codeBuilder &&
+        // orderedListBuilder == other.orderedListBuilder &&
+        // unOrderedListBuilder == other.unOrderedListBuilder &&
+        // linkBuilder == other.linkBuilder &&
+        // imageBuilder == other.imageBuilder &&
+        // highlightBuilder == other.highlightBuilder &&
+        // onLinkTap == other.onLinkTap &&
+        textDirection == other.textDirection;
   }
 }

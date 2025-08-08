@@ -75,7 +75,15 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   TextDirection _direction = TextDirection.ltr;
   final TextEditingController _controller = TextEditingController(
-    text: r'''
+    text: r'''This is a sample markdown document.
+* **bold**
+* *italic*
+* **_bold and italic_**
+* ~~strikethrough~~
+* `code`
+* [link](https://www.google.com)
+
+[![alt text](https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png)](link_url)
 ```markdown
 # Complex Markdown Document for Testing
 
@@ -321,6 +329,12 @@ This document was created to test the robustness of Markdown parsers and to ensu
 
   @override
   Widget build(BuildContext context) {
+//     var data = '''|asdfasfd|asdfasf|
+// |---|---|
+// |sohag|asdfasf|
+// |asdfasf|asdfasf|
+// ''';
+
     return GptMarkdownTheme(
       gptThemeData: GptMarkdownTheme.of(context).copyWith(
         highlightColor: Colors.purple,
@@ -403,6 +417,7 @@ This document was created to test the robustness of Markdown parsers and to ensu
                         ListenableBuilder(
                           listenable: _controller,
                           builder: (context, _) {
+                            var data = _controller.text;
                             return Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
@@ -432,9 +447,9 @@ This document was created to test the robustness of Markdown parsers and to ensu
                                 child: Builder(
                                   builder: (context) {
                                     Widget child = GptMarkdown(
-                                      _controller.text,
+                                      data,
                                       textDirection: _direction,
-                                      onLinkTab: (url, title) {
+                                      onLinkTap: (url, title) {
                                         debugPrint(url);
                                         debugPrint(title);
                                       },
@@ -443,8 +458,9 @@ This document was created to test the robustness of Markdown parsers and to ensu
                                       textAlign: TextAlign.justify,
                                       textScaler: const TextScaler.linear(1),
                                       style: const TextStyle(
-                                        fontSize: 15,
-                                      ),
+                                          // fontFamily: 'monospace',
+                                          // fontWeight: FontWeight.bold,
+                                          ),
                                       highlightBuilder: (context, text, style) {
                                         return Container(
                                           padding: const EdgeInsets.symmetric(
@@ -506,13 +522,13 @@ This document was created to test the robustness of Markdown parsers and to ensu
                                             RegExp(r"align\*"),
                                             (match) => "aligned");
                                       },
-                                      imageBuilder: (context, url) {
-                                        return Image.network(
-                                          url,
-                                          width: 100,
-                                          height: 100,
-                                        );
-                                      },
+                                      // imageBuilder: (context, url) {
+                                      //   return Image.network(
+                                      //     url,
+                                      //     width: 100,
+                                      //     height: 100,
+                                      //   );
+                                      // },
                                       latexBuilder:
                                           (context, tex, textStyle, inline) {
                                         if (tex.contains(r"\begin{tabular}")) {
@@ -598,47 +614,65 @@ This document was created to test the robustness of Markdown parsers and to ensu
                                       },
                                       linkBuilder:
                                           (context, label, path, style) {
-                                        return Text(
+                                        return Text.rich(
                                           label,
                                           style: style.copyWith(
                                             color: Colors.blue,
                                           ),
                                         );
                                       },
-                                      components: [
-                                        CodeBlockMd(),
-                                        NewLines(),
-                                        BlockQuote(),
-                                        ImageMd(),
-                                        ATagMd(),
-                                        TableMd(),
-                                        HTag(),
-                                        UnOrderedList(),
-                                        OrderedList(),
-                                        RadioButtonMd(),
-                                        CheckBoxMd(),
-                                        HrLine(),
-                                        StrikeMd(),
-                                        BoldMd(),
-                                        ItalicMd(),
-                                        LatexMath(),
-                                        LatexMathMultiLine(),
-                                        HighlightedText(),
-                                        SourceTag(),
-                                        IndentMd(),
-                                      ],
-                                      inlineComponents: [
-                                        ImageMd(),
-                                        ATagMd(),
-                                        TableMd(),
-                                        StrikeMd(),
-                                        BoldMd(),
-                                        ItalicMd(),
-                                        LatexMath(),
-                                        LatexMathMultiLine(),
-                                        HighlightedText(),
-                                        SourceTag(),
-                                      ],
+
+                                      // tableBuilder: (context, tableRows,
+                                      //     textStyle, config) {
+                                      //   return Table(
+                                      //     border: TableBorder.all(
+                                      //       width: 1,
+                                      //       color: Colors.red,
+                                      //     ),
+                                      //     children: tableRows.map((e) {
+                                      //       return TableRow(
+                                      //         children: e.fields.map((e) {
+                                      //           return Text(e.data);
+                                      //         }).toList(),
+                                      //       );
+                                      //     }).toList(),
+                                      //   );
+                                      // },
+
+                                      // components: [
+                                      //   CodeBlockMd(),
+                                      //   NewLines(),
+                                      //   BlockQuote(),
+                                      //   ImageMd(),
+                                      //   ATagMd(),
+                                      //   TableMd(),
+                                      //   HTag(),
+                                      //   UnOrderedList(),
+                                      //   OrderedList(),
+                                      //   RadioButtonMd(),
+                                      //   CheckBoxMd(),
+                                      //   HrLine(),
+                                      //   StrikeMd(),
+                                      //   BoldMd(),
+                                      //   ItalicMd(),
+                                      //   LatexMath(),
+                                      //   LatexMathMultiLine(),
+                                      //   HighlightedText(),
+                                      //   SourceTag(),
+                                      //   IndentMd(),
+                                      // ],
+                                      // inlineComponents: [
+                                      //   ImageMd(),
+                                      //   ATagMd(),
+                                      //   TableMd(),
+                                      //   StrikeMd(),
+                                      //   BoldMd(),
+                                      //   ItalicMd(),
+                                      //   LatexMath(),
+                                      //   LatexMathMultiLine(),
+                                      //   HighlightedText(),
+                                      //   SourceTag(),
+                                      // ],
                                       // codeBuilder: (context, name, code, closed) {
                                       //   return Padding(
                                       //     padding: const EdgeInsets.symmetric(

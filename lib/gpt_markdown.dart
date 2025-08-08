@@ -30,7 +30,7 @@ class GptMarkdown extends StatelessWidget {
     this.textAlign,
     this.imageBuilder,
     this.textScaler,
-    this.onLinkTab,
+    this.onLinkTap,
     this.latexBuilder,
     this.codeBuilder,
     this.sourceTagBuilder,
@@ -40,6 +40,7 @@ class GptMarkdown extends StatelessWidget {
     this.overflow,
     this.orderedListBuilder,
     this.unOrderedListBuilder,
+    this.tableBuilder,
     this.components,
     this.inlineComponents,
     this.useDollarSignsForLatex = false,
@@ -61,7 +62,7 @@ class GptMarkdown extends StatelessWidget {
   final TextScaler? textScaler;
 
   /// The callback function to handle link clicks.
-  final void Function(String url, String title)? onLinkTab;
+  final void Function(String url, String title)? onLinkTap;
 
   /// The LaTeX workaround.
   final String Function(String tex)? latexWorkaround;
@@ -99,6 +100,9 @@ class GptMarkdown extends StatelessWidget {
 
   /// Whether to use dollar signs for LaTeX.
   final bool useDollarSignsForLatex;
+
+  /// The table builder.
+  final TableBuilder? tableBuilder;
 
   /// The list of components.
   ///  ```dart
@@ -179,12 +183,13 @@ class GptMarkdown extends StatelessWidget {
     // tex = _removeExtraLinesInsideBlockLatex(tex);
     return ClipRRect(
       child: MdWidget(
+        context,
         tex,
         true,
         config: GptMarkdownConfig(
           textDirection: textDirection,
           style: style,
-          onLinkTab: onLinkTab,
+          onLinkTap: onLinkTap,
           textAlign: textAlign,
           textScaler: textScaler,
           followLinkColor: followLinkColor,
@@ -201,6 +206,7 @@ class GptMarkdown extends StatelessWidget {
           unOrderedListBuilder: unOrderedListBuilder,
           components: components,
           inlineComponents: inlineComponents,
+          tableBuilder: tableBuilder,
         ),
       ),
     );
