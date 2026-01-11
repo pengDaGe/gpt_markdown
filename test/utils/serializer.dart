@@ -5,6 +5,7 @@ import 'package:gpt_markdown/custom_widgets/custom_rb_cb.dart';
 import 'package:gpt_markdown/custom_widgets/indent_widget.dart';
 import 'package:gpt_markdown/custom_widgets/link_button.dart';
 import 'package:gpt_markdown/custom_widgets/unordered_ordered_list.dart';
+import 'package:gpt_markdown/gpt_markdown.dart' show MarkdownComponent, MdWidget;
 
 /// Serializes a Flutter span tree into a stable, comparable string format.
 ///
@@ -212,7 +213,8 @@ class MarkdownSerializer {
 
     // Link button
     if (widget is LinkButton) {
-      _write('LINK("${_escapeText(widget.text)}")');
+      final urlPart = widget.url != null ? ', url="${_escapeText(widget.url!)}"' : '';
+      _write('LINK("${_escapeText(widget.text)}"$urlPart)');
       return;
     }
 
@@ -367,6 +369,28 @@ class MarkdownSerializer {
 
     if (widget is RichText) {
       return childSerializer.serialize(widget.text);
+    }
+
+    // Handle MdWidget by parsing its markdown expression into spans
+    if (widget is MdWidget) {
+      final content = widget.exp.trim();
+      if (content.isNotEmpty) {
+        // Parse the markdown into spans using the same config
+        final spans = MarkdownComponent.generate(
+          widget.context,
+          content,
+          widget.config,
+          widget.includeGlobalComponents,
+        );
+        // Serialize the parsed spans
+        final childSerializer = MarkdownSerializer();
+        childSerializer._depth = _depth;
+        for (final span in spans) {
+          childSerializer._visitSpan(span);
+        }
+        return childSerializer._buffer.toString().trim();
+      }
+      return '';
     }
 
     // Handle StatefulWidget by trying to find RichText in the tree

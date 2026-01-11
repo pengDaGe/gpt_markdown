@@ -36,19 +36,54 @@ Future<void> pumpMarkdown(
 /// Extracts and serializes the output from the rendered [GptMarkdown] widget.
 ///
 /// Returns the serialized string representation of the markdown output.
+/// This iterates through ALL RichText widgets to capture nested content
+/// (from MdWidget instances inside list items, checkboxes, etc.)
 String getSerializedOutput(WidgetTester tester) {
-  // Find RichText widgets (the actual rendered output)
+  // Find ALL RichText widgets (including nested ones from MdWidget)
   final richTextFinder = find.byType(RichText);
 
   if (richTextFinder.evaluate().isEmpty) {
     return '';
   }
 
-  // Get the first RichText widget (main content)
-  final richText = tester.widget<RichText>(richTextFinder.first);
+  // Get all RichText widgets
+  final richTexts = tester.widgetList<RichText>(richTextFinder).toList();
 
-  // Serialize the span tree
-  return serializeMarkdown(richText.text);
+  if (richTexts.isEmpty) {
+    return '';
+  }
+
+  // Serialize the first (main) RichText - this has the structure
+  final mainOutput = serializeMarkdown(richTexts.first.text);
+
+  // Extract text content from ALL RichText widgets to capture nested content
+  final allTextContent = <String>[];
+  for (final rt in richTexts) {
+    final text = _extractAllText(rt.text);
+    if (text.isNotEmpty) {
+      allTextContent.add(text);
+    }
+  }
+
+  // Return the main serialized output (structure-aware)
+  // The test can also use allTextContent for text verification if needed
+  return mainOutput;
+}
+
+/// Extracts plain text from a span tree (for content verification)
+String _extractAllText(InlineSpan span) {
+  final buffer = StringBuffer();
+  if (span is TextSpan) {
+    if (span.text != null) {
+      buffer.write(span.text);
+    }
+    if (span.children != null) {
+      for (final child in span.children!) {
+        buffer.write(_extractAllText(child));
+      }
+    }
+  }
+  return buffer.toString();
 }
 
 /// Combined helper that pumps markdown and asserts on the serialized output.

@@ -14,7 +14,7 @@ The test framework is designed around these principles:
 
 3. **Granular Organization**: Each markdown feature has its own test file for easy navigation and focused testing.
 
-4. **Regression Testing**: A dedicated folder for bug reproduction tests ensures fixed bugs stay fixed.
+4. **Bug Tracking**: A two-folder system separates known unfixed bugs (`/bugs`) from fixed bugs (`/regression`) to track issues and prevent recurrence.
 
 ## Directory Structure
 
@@ -52,8 +52,14 @@ test/
 ├── images/                      # Image tests
 │   └── image_test.dart
 │
-└── regression/                  # Bug reproduction tests
-    └── issue_<number>_<description>_test.dart
+├── bugs/                        # Known unfixed bugs (expected to FAIL)
+│   └── <description>_test.dart
+│
+├── regression/                  # Fixed bugs (expected to PASS)
+│   └── issue_<number>_<description>_test.dart
+│
+└── integration/                 # Complex multi-feature tests
+    └── complex_markdown_test.dart
 ```
 
 ## Serializer Output Format Reference
@@ -209,15 +215,68 @@ await expectMarkdown(
 );
 ```
 
-## Adding Regression Tests
+## Bug Tracking Workflow
 
-Regression tests reproduce specific bugs from GitHub issues. Follow this naming convention:
+The test framework uses a two-folder system to track bugs:
+
+### Folder Structure
+
+| Folder | Purpose | Test Status |
+|--------|---------|-------------|
+| `test/bugs/` | Known unfixed bugs | Expected to **FAIL** |
+| `test/regression/` | Fixed bugs | Expected to **PASS** |
+
+### Workflow
+
+1. **Discover a bug**: Create a test that exposes the bug in `test/bugs/`
+2. **Fix the bug**: Implement the fix in the library
+3. **Move to regression**: Once the test passes, move it from `test/bugs/` to `test/regression/`
+4. **Prevent recurrence**: Regression tests ensure the bug doesn't reappear
+
+### Running Tests
+
+```bash
+# Run all tests EXCEPT bugs (for CI)
+flutter test test/block test/inline test/latex test/images test/integration test/regression
+
+# Run only bug tests (to see known issues)
+flutter test test/bugs/
+
+# Run everything including bugs
+flutter test
+```
+
+### Bug Test Template
+
+```dart
+/// BUG: Brief description of the bug
+///
+/// Detailed explanation of what should happen vs what actually happens.
+///
+/// Location: path/to/file.dart, methodName()
+library;
+
+import 'package:flutter_test/flutter_test.dart';
+import '../utils/test_helpers.dart';
+
+void main() {
+  group('Bug: description', () {
+    testWidgets('expected behavior that currently fails', (tester) async {
+      await pumpMarkdown(tester, 'input markdown');
+      final output = getSerializedOutput(tester);
+      
+      // BUG: This fails because...
+      expect(output, contains('expected output'));
+    });
+  });
+}
+```
+
+### Regression Test Template
+
+Once a bug is fixed, move the test to `test/regression/` with this format:
 
 **Filename**: `issue_<number>_<brief_description>_test.dart`
-
-**Example**: `issue_42_nested_bold_italic_test.dart`
-
-### Template
 
 ```dart
 // Regression test for: https://github.com/Infinitix-LLC/gpt_markdown/issues/42
@@ -225,9 +284,7 @@ Regression tests reproduce specific bugs from GitHub issues. Follow this naming 
 // Bug: Nested bold and italic text was not rendering correctly
 // when bold was the outer wrapper.
 //
-// Input: ***bold italic***
-// Expected: Bold and italic styling applied
-// Actual (before fix): Only bold was applied
+// Fixed in: commit abc123 / PR #43
 
 import 'package:flutter_test/flutter_test.dart';
 import '../utils/test_helpers.dart';
