@@ -221,7 +221,8 @@ class HTag extends BlockMd {
             conf,
             false,
           )),
-          if (match.namedGroup('hash')!.length == 1) ...[
+          if (match.namedGroup('hash')!.length == 1 &&
+              theme.autoAddDividerLineAfterH1) ...[
             const TextSpan(
               text: "\n ",
               style: TextStyle(fontSize: 0, height: 0),
@@ -229,9 +230,8 @@ class HTag extends BlockMd {
             WidgetSpan(
               child: CustomDivider(
                 height: theme.hrLineThickness,
-                color:
-                    config.style?.color ??
-                    Theme.of(context).colorScheme.outline,
+                color: theme.hrLineColor,
+                padding: theme.hrLinePadding,
               ),
             ),
           ],
@@ -271,11 +271,11 @@ class HrLine extends BlockMd {
     String text,
     final GptMarkdownConfig config,
   ) {
-    var thickness = GptMarkdownTheme.of(context).hrLineThickness;
-    var color = GptMarkdownTheme.of(context).hrLineColor;
+    final gptTheme = GptMarkdownTheme.of(context);
     return CustomDivider(
-      height: thickness,
-      color: config.style?.color ?? color,
+      height: gptTheme.hrLineThickness,
+      color: gptTheme.hrLineColor,
+      padding: gptTheme.hrLinePadding,
     );
   }
 }

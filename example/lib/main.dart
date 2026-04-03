@@ -338,6 +338,8 @@ This document was created to test the robustness of Markdown parsers and to ensu
     return GptMarkdownTheme(
       gptThemeData: GptMarkdownTheme.of(context).copyWith(
         highlightColor: Colors.purple,
+        hrLinePadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
+        hrLineColor: Colors.red,
       ),
       child: Scaffold(
         appBar: AppBar(
