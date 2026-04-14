@@ -202,14 +202,15 @@ class HTag extends BlockMd {
     var theme = GptMarkdownTheme.of(context);
     var match = this.exp.firstMatch(text.trim());
     var conf = config.copyWith(
-      style: [
-        theme.h1,
-        theme.h2,
-        theme.h3,
-        theme.h4,
-        theme.h5,
-        theme.h6,
-      ][match![1]!.length - 1]?.copyWith(color: config.style?.color),
+      style:
+          [
+            theme.h1,
+            theme.h2,
+            theme.h3,
+            theme.h4,
+            theme.h5,
+            theme.h6,
+          ][match![1]!.length - 1],
     );
     return config.getRich(
       TextSpan(
@@ -220,7 +221,8 @@ class HTag extends BlockMd {
             conf,
             false,
           )),
-          if (match.namedGroup('hash')!.length == 1) ...[
+          if (match.namedGroup('hash')!.length == 1 &&
+              theme.autoAddDividerLineAfterH1) ...[
             const TextSpan(
               text: "\n ",
               style: TextStyle(fontSize: 0, height: 0),
@@ -228,9 +230,8 @@ class HTag extends BlockMd {
             WidgetSpan(
               child: CustomDivider(
                 height: theme.hrLineThickness,
-                color:
-                    config.style?.color ??
-                    Theme.of(context).colorScheme.outline,
+                color: theme.hrLineColor,
+                padding: theme.hrLinePadding,
               ),
             ),
           ],
@@ -270,11 +271,11 @@ class HrLine extends BlockMd {
     String text,
     final GptMarkdownConfig config,
   ) {
-    var thickness = GptMarkdownTheme.of(context).hrLineThickness;
-    var color = GptMarkdownTheme.of(context).hrLineColor;
+    final gptTheme = GptMarkdownTheme.of(context);
     return CustomDivider(
-      height: thickness,
-      color: config.style?.color ?? color,
+      height: gptTheme.hrLineThickness,
+      color: gptTheme.hrLineColor,
+      padding: gptTheme.hrLinePadding,
     );
   }
 }
@@ -427,11 +428,11 @@ class OrderedList extends BlockMd {
     String text,
     final GptMarkdownConfig config,
   ) {
-    var match = this.exp.firstMatch(text.trim());
+    var match = this.exp.firstMatch(text);
 
-    var no = "${match?[1]}";
+    var no = "${match?[1]}".trim();
 
-    var child = MdWidget(context, "${match?[2]?.trim()}", true, config: config);
+    var child = MdWidget(context, "${match?[2]}".trim(), true, config: config);
     return config.orderedListBuilder?.call(
           context,
           no,
@@ -588,7 +589,7 @@ class ItalicMd extends InlineMd {
 
 class LatexMathMultiLine extends BlockMd {
   @override
-  String get expString => (r"\ *\\\[((?:.)*?)\\\]|(\ *\\begin.*?\\end{.*?})");
+  String get expString => (r"\ *\\\[((?:.)*?)\\\]");
   // (r"\ *\\\[((?:(?!\n\n\n).)*?)\\\]|(\\begin.*?\\end{.*?})");
   @override
   RegExp get exp => RegExp(expString, dotAll: true, multiLine: true);
@@ -872,6 +873,8 @@ class ATagMd extends InlineMd {
     WidgetSpan? child;
     if (builder != null) {
       child = WidgetSpan(
+        baseline: TextBaseline.alphabetic,
+        alignment: PlaceholderAlignment.baseline,
         child: GestureDetector(
           onTap: () => config.onLinkTap?.call(url, linkText),
           child: builder(
@@ -1193,7 +1196,7 @@ class CodeBlockMd extends BlockMd {
   ) {
     String codes = this.exp.firstMatch(text)?[2] ?? "";
     String name = this.exp.firstMatch(text)?[1] ?? "";
-    codes = codes.replaceAll(r"```", "").trim();
+    codes = codes.replaceAll(r"```", "");
     bool closed = text.endsWith("```");
 
     return config.codeBuilder?.call(context, name, codes, closed) ??
